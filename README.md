@@ -30,7 +30,7 @@ A modern Electron template built with **Vite**, **React**, **TypeScript**, and *
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/Electron-Template.git
+git clone https://github.com/VikumKarunathilake/Electron-Template.git
 cd Electron-Template
 
 # Install dependencies with npm
@@ -93,14 +93,14 @@ pnpm preview
 
 ## Dependencies
 
-* **React** & **React DOM**
-* **React Router DOM**
-* **Zustand**
-* **next-themes**
-* **Sonner**
-* **Tailwind CSS** & **tailwind-animate**
-* **Lucide React**
-* **clsx** for conditional class names
+- **React** & **React DOM**
+- **React Router DOM**
+- **Zustand**
+- **next-themes**
+- **Sonner**
+- **Tailwind CSS** & **tailwind-animate**
+- **Lucide React**
+- **clsx** for conditional class names
 
 ---
 
