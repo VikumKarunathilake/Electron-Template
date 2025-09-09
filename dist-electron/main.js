@@ -9,35 +9,74 @@ const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
 const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
 const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
 process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
-let win;
-function createWindow() {
-  win = new BrowserWindow({
+let mainWindow;
+let loadingWindow;
+function createLoadingWindow() {
+  loadingWindow = new BrowserWindow({
+    width: 400,
+    height: 300,
+    frame: false,
+    alwaysOnTop: true,
+    transparent: false,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true
+    },
+    center: true,
+    resizable: false
+  });
+  if (VITE_DEV_SERVER_URL) {
+    loadingWindow.loadFile(path.join(process.env.APP_ROOT, "public", "loading.html"));
+  } else {
+    loadingWindow.loadFile(path.join(process.env.VITE_PUBLIC, "loading.html"));
+  }
+  return loadingWindow;
+}
+function createMainWindow() {
+  mainWindow = new BrowserWindow({
     icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
+    show: false,
+    // Don't show until ready to show
     webPreferences: {
       preload: path.join(__dirname, "preload.mjs")
     }
   });
-  win.webContents.on("did-finish-load", () => {
-    win == null ? void 0 : win.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
+  mainWindow.once("ready-to-show", () => {
+    if (loadingWindow) {
+      loadingWindow.close();
+      loadingWindow = null;
+    }
+    mainWindow == null ? void 0 : mainWindow.show();
+  });
+  mainWindow.webContents.on("did-finish-load", () => {
+    mainWindow == null ? void 0 : mainWindow.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
   });
   if (VITE_DEV_SERVER_URL) {
-    win.loadURL(VITE_DEV_SERVER_URL);
+    mainWindow.loadURL(VITE_DEV_SERVER_URL);
   } else {
-    win.loadFile(path.join(RENDERER_DIST, "index.html"));
+    mainWindow.loadFile(path.join(RENDERER_DIST, "index.html"));
   }
+  return mainWindow;
 }
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
     app.quit();
-    win = null;
+    mainWindow = null;
+    loadingWindow = null;
   }
 });
 app.on("activate", () => {
   if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
+    createLoadingWindow();
+    setTimeout(createMainWindow, 2e3);
   }
 });
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createLoadingWindow();
+  setTimeout(() => {
+    createMainWindow();
+  }, 3e3);
+});
 export {
   MAIN_DIST,
   RENDERER_DIST,
